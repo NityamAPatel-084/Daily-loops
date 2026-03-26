@@ -1,0 +1,47 @@
+Add Firebase SDK : 
+
+
+USing npm ->
+npm install firebase
+
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBYdK41zZ-o4ZPlhHpsmhSytqN44TZMVp4",
+  authDomain: "task-tracker-64a8f.firebaseapp.com",
+  projectId: "task-tracker-64a8f",
+  storageBucket: "task-tracker-64a8f.firebasestorage.app",
+  messagingSenderId: "585524415248",
+  appId: "1:585524415248:web:41960a805d1dd60dec7395"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+
+use a <script> tag .
+
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyBYdK41zZ-o4ZPlhHpsmhSytqN44TZMVp4",
+    authDomain: "task-tracker-64a8f.firebaseapp.com",
+    projectId: "task-tracker-64a8f",
+    storageBucket: "task-tracker-64a8f.firebasestorage.app",
+    messagingSenderId: "585524415248",
+    appId: "1:585524415248:web:41960a805d1dd60dec7395"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+</script>
