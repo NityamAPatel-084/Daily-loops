@@ -240,7 +240,7 @@ export default function Dashboard() {
         id: 1, title: 'My First Project', description: 'A personal dev project', date: '', status: 'active', tasks: [
           { text: 'Phase 1: Planning and Wireframing', completed: true },
           { text: 'Phase 2: Database Design', completed: false }
-        ], notes: ''
+        ], notes: '', links: []
       }
     ],
     'workshop': [],
@@ -437,7 +437,8 @@ export default function Dashboard() {
           date: date || '',
           status: 'active',
           tasks: [],
-          notes: ''
+          notes: '',
+          links: []
         };
         setCustomProjects(prev => ({
           ...prev,
@@ -782,6 +783,64 @@ export default function Dashboard() {
                   />
                 </div>
 
+                <div style={{ marginTop: '1rem' }}>
+                  <h4 style={{ fontSize: '0.9rem', color: 'var(--text-main)', marginBottom: '0.5rem' }}>Important Links:</h4>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    {(Array.isArray(course.links) ? course.links : []).map((link, i) => {
+                      const linkObj = typeof link === 'object' ? link : { label: `Link ${i + 1}`, url: link || '' };
+                      return (
+                        <div key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8rem', padding: '0.25rem 0.6rem', background: 'rgba(14, 165, 233, 0.1)', color: '#38bdf8', borderRadius: '999px', border: '1px solid rgba(14, 165, 233, 0.2)' }}>
+                          {linkObj.url ? (
+                            <a href={linkObj.url} target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'none' }}>{linkObj.label}</a>
+                          ) : (
+                            <span>{linkObj.label}</span>
+                          )}
+                          <button
+                            onClick={() => {
+                              const newUrl = window.prompt(`Enter URL for "${linkObj.label}":`, linkObj.url || '');
+                              if (newUrl !== null) {
+                                const existing = Array.isArray(course.links) ? course.links : [];
+                                const newLinks = existing.map((l, li) => li === i ? { label: linkObj.label, url: newUrl } : (typeof l === 'object' ? l : { label: `Link ${li + 1}`, url: l || '' }));
+                                handleCourseUpdate(course.id, { links: newLinks, courseLink: newLinks[0]?.url || course.courseLink || '' });
+                              }
+                            }}
+                            style={{ background: 'transparent', border: 'none', color: linkObj.url ? '#10b981' : '#38bdf8', cursor: 'pointer', padding: 0, display: 'flex' }}
+                            title={linkObj.url ? 'Update URL' : 'Add URL'}
+                          >
+                            <ExternalLink size={11} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              const existing = Array.isArray(course.links) ? course.links : [];
+                              const newLinks = existing.filter((_, li) => li !== i);
+                              handleCourseUpdate(course.id, { links: newLinks, courseLink: newLinks[0]?.url || '' });
+                            }}
+                            style={{ background: 'transparent', border: 'none', color: 'var(--status-deadline)', cursor: 'pointer', padding: 0, display: 'flex' }}
+                            title="Remove Link"
+                          >
+                            <Trash2 size={11} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                    <button
+                      onClick={() => {
+                        const linkLabel = window.prompt('Enter link label (e.g., Docs, Portal):', 'Course Link');
+                        if (!linkLabel) return;
+                        const linkUrl = window.prompt('Enter link URL:', '');
+                        if (linkUrl === null) return;
+                        const existing = Array.isArray(course.links) ? course.links : [];
+                        const newLinks = [...existing, { label: linkLabel, url: linkUrl }];
+                        handleCourseUpdate(course.id, { links: newLinks, courseLink: newLinks[0]?.url || course.courseLink || '' });
+                      }}
+                      className="btn btn-outline"
+                      style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem' }}
+                    >
+                      + Add Link
+                    </button>
+                  </div>
+                </div>
+
                 <div className="progress-wrapper" style={{ marginTop: '1.5rem' }}>
                   <div className="progress-meta">
                     <span>Course Progress</span>
@@ -929,6 +988,64 @@ export default function Dashboard() {
                     rows={2}
                     style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', background: 'var(--hover-bg)', border: '1px solid var(--panel-border)', color: 'var(--text-main)', fontSize: '0.8rem', resize: 'vertical', outline: 'none' }}
                   />
+                </div>
+
+                <div style={{ marginTop: '1rem' }}>
+                  <h4 style={{ fontSize: '0.9rem', color: 'var(--text-main)', marginBottom: '0.5rem' }}>Important Links:</h4>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    {(Array.isArray(intern.links) ? intern.links : []).map((link, i) => {
+                      const linkObj = typeof link === 'object' ? link : { label: `Link ${i + 1}`, url: link || '' };
+                      return (
+                        <div key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8rem', padding: '0.25rem 0.6rem', background: 'rgba(14, 165, 233, 0.1)', color: '#38bdf8', borderRadius: '999px', border: '1px solid rgba(14, 165, 233, 0.2)' }}>
+                          {linkObj.url ? (
+                            <a href={linkObj.url} target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'none' }}>{linkObj.label}</a>
+                          ) : (
+                            <span>{linkObj.label}</span>
+                          )}
+                          <button
+                            onClick={() => {
+                              const newUrl = window.prompt(`Enter URL for "${linkObj.label}":`, linkObj.url || '');
+                              if (newUrl !== null) {
+                                const existing = Array.isArray(intern.links) ? intern.links : [];
+                                const newLinks = existing.map((l, li) => li === i ? { label: linkObj.label, url: newUrl } : (typeof l === 'object' ? l : { label: `Link ${li + 1}`, url: l || '' }));
+                                handleInternshipUpdate(intern.id, { links: newLinks, internLink: newLinks[0]?.url || intern.internLink || '' });
+                              }
+                            }}
+                            style={{ background: 'transparent', border: 'none', color: linkObj.url ? '#10b981' : '#38bdf8', cursor: 'pointer', padding: 0, display: 'flex' }}
+                            title={linkObj.url ? 'Update URL' : 'Add URL'}
+                          >
+                            <ExternalLink size={11} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              const existing = Array.isArray(intern.links) ? intern.links : [];
+                              const newLinks = existing.filter((_, li) => li !== i);
+                              handleInternshipUpdate(intern.id, { links: newLinks, internLink: newLinks[0]?.url || '' });
+                            }}
+                            style={{ background: 'transparent', border: 'none', color: 'var(--status-deadline)', cursor: 'pointer', padding: 0, display: 'flex' }}
+                            title="Remove Link"
+                          >
+                            <Trash2 size={11} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                    <button
+                      onClick={() => {
+                        const linkLabel = window.prompt('Enter link label (e.g., Docs, Portal):', 'Program Link');
+                        if (!linkLabel) return;
+                        const linkUrl = window.prompt('Enter link URL:', '');
+                        if (linkUrl === null) return;
+                        const existing = Array.isArray(intern.links) ? intern.links : [];
+                        const newLinks = [...existing, { label: linkLabel, url: linkUrl }];
+                        handleInternshipUpdate(intern.id, { links: newLinks, internLink: newLinks[0]?.url || intern.internLink || '' });
+                      }}
+                      className="btn btn-outline"
+                      style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem' }}
+                    >
+                      + Add Link
+                    </button>
+                  </div>
                 </div>
 
                 <div className="progress-wrapper" style={{ marginTop: '1.5rem' }}>
@@ -1376,6 +1493,64 @@ export default function Dashboard() {
                       rows={2}
                       style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', background: 'var(--hover-bg)', border: '1px solid var(--panel-border)', color: 'var(--text-main)', fontSize: '0.8rem', resize: 'vertical', outline: 'none' }}
                     />
+                  </div>
+
+                  <div style={{ marginTop: '1rem' }}>
+                    <h4 style={{ fontSize: '0.9rem', color: 'var(--text-main)', marginBottom: '0.5rem' }}>Important Links:</h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      {(Array.isArray(project.links) ? project.links : []).map((link, i) => {
+                        const linkObj = typeof link === 'object' ? link : { label: `Link ${i + 1}`, url: link || '' };
+                        return (
+                          <div key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8rem', padding: '0.25rem 0.6rem', background: 'rgba(14, 165, 233, 0.1)', color: '#38bdf8', borderRadius: '999px', border: '1px solid rgba(14, 165, 233, 0.2)' }}>
+                            {linkObj.url ? (
+                              <a href={linkObj.url} target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'none' }}>{linkObj.label}</a>
+                            ) : (
+                              <span>{linkObj.label}</span>
+                            )}
+                            <button
+                              onClick={() => {
+                                const newUrl = window.prompt(`Enter URL for "${linkObj.label}":`, linkObj.url || '');
+                                if (newUrl !== null) {
+                                  const existing = Array.isArray(project.links) ? project.links : [];
+                                  const newLinks = existing.map((l, li) => li === i ? { label: linkObj.label, url: newUrl } : (typeof l === 'object' ? l : { label: `Link ${li + 1}`, url: l || '' }));
+                                  handleProjectUpdate(section.id, project.id, { links: newLinks });
+                                }
+                              }}
+                              style={{ background: 'transparent', border: 'none', color: linkObj.url ? '#10b981' : '#38bdf8', cursor: 'pointer', padding: 0, display: 'flex' }}
+                              title={linkObj.url ? 'Update URL' : 'Add URL'}
+                            >
+                              <ExternalLink size={11} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                const existing = Array.isArray(project.links) ? project.links : [];
+                                const newLinks = existing.filter((_, li) => li !== i);
+                                handleProjectUpdate(section.id, project.id, { links: newLinks });
+                              }}
+                              style={{ background: 'transparent', border: 'none', color: 'var(--status-deadline)', cursor: 'pointer', padding: 0, display: 'flex' }}
+                              title="Remove Link"
+                            >
+                              <Trash2 size={11} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                      <button
+                        onClick={() => {
+                          const linkLabel = window.prompt('Enter link label (e.g., Repo, Docs):', 'Project Link');
+                          if (!linkLabel) return;
+                          const linkUrl = window.prompt('Enter link URL:', '');
+                          if (linkUrl === null) return;
+                          const existing = Array.isArray(project.links) ? project.links : [];
+                          const newLinks = [...existing, { label: linkLabel, url: linkUrl }];
+                          handleProjectUpdate(section.id, project.id, { links: newLinks });
+                        }}
+                        className="btn btn-outline"
+                        style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem' }}
+                      >
+                        + Add Link
+                      </button>
+                    </div>
                   </div>
 
                   <div className="progress-wrapper" style={{ marginTop: '1.5rem' }}>
