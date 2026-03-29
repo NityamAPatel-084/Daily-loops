@@ -30,7 +30,7 @@ import {
   CalendarDays,
   LogOut
 } from 'lucide-react';
-import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, isSameMonth, isToday, addMonths, subMonths, isSameDay, parseISO } from 'date-fns';
+import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, format, isSameMonth, isToday, addMonths, subMonths, isSameDay, parseISO, differenceInCalendarDays, isValid } from 'date-fns';
 
 // --- MOCK DATA ---
 const initialCourses = [
@@ -616,64 +616,279 @@ export default function Dashboard() {
     }
   };
 
+  const parseDateSafe = (dateValue) => {
+    if (!dateValue || typeof dateValue !== 'string') return null;
+    const parsedDate = parseISO(dateValue);
+    return isValid(parsedDate) ? parsedDate : null;
+  };
+
+  const resolvePriority = (taskObj, fallbackText) => {
+    if (taskObj?.priority === 'high') return 'high';
+    if (taskObj?.priority === 'medium') return 'medium';
+    if (taskObj?.priority === 'low') return 'low';
+
+    const base = `${fallbackText || ''}`.toLowerCase();
+    if (base.includes('(high)') || base.includes('urgent') || base.includes('asap')) return 'high';
+    if (base.includes('(low)')) return 'low';
+    return 'medium';
+  };
+
+  const immediateTasks = [
+    ...courses.flatMap((course) =>
+      (course.tasks || []).map((task, idx) => {
+        const taskObj = typeof task === 'object' ? task : { text: task };
+        return {
+          id: `course-${course.id}-${idx}`,
+          section: 'SAP Courses',
+          title: course.title,
+          text: taskObj.text || 'Untitled Task',
+          completed: Boolean(taskObj.completed),
+          dueDate: parseDateSafe(taskObj.dueDate || course.deadline),
+          priority: resolvePriority(taskObj, taskObj.text)
+        };
+      })
+    ),
+    ...internships.flatMap((internship) =>
+      (internship.tasks || []).map((task, idx) => {
+        const taskObj = typeof task === 'object' ? task : { text: task };
+        return {
+          id: `internship-${internship.id}-${idx}`,
+          section: 'Internships',
+          title: internship.title,
+          text: taskObj.text || 'Untitled Task',
+          completed: Boolean(taskObj.completed),
+          dueDate: parseDateSafe(taskObj.dueDate),
+          priority: resolvePriority(taskObj, taskObj.text)
+        };
+      })
+    ),
+    ...hackathons.flatMap((hackathon) =>
+      (hackathon.tasks || []).map((task, idx) => {
+        const taskObj = typeof task === 'object' ? task : { text: task };
+        return {
+          id: `hackathon-${hackathon.id}-${idx}`,
+          section: 'Hackathons',
+          title: hackathon.title,
+          text: taskObj.text || 'Untitled Task',
+          completed: Boolean(taskObj.completed),
+          dueDate: parseDateSafe(taskObj.dueDate || hackathon.date),
+          priority: resolvePriority(taskObj, taskObj.text)
+        };
+      })
+    ),
+    ...Object.entries(customProjects).flatMap(([sectionId, projects]) => {
+      const sectionLabel = customSections.find((s) => s.id === sectionId)?.label || 'Custom';
+      return (projects || []).flatMap((project) =>
+        (project.tasks || []).map((task, idx) => ({
+          id: `project-${project.id}-${idx}`,
+          section: sectionLabel,
+          title: project.title,
+          text: task.text || 'Untitled Task',
+          completed: Boolean(task.completed),
+          dueDate: parseDateSafe(task.dueDate || project.date),
+          priority: resolvePriority(task, task.text)
+        }))
+      );
+    }),
+    ...Object.entries(customTasks).flatMap(([sectionId, tasks]) => {
+      const sectionLabel = customSections.find((s) => s.id === sectionId)?.label || 'Custom';
+      return (tasks || []).map((task) => ({
+        id: `custom-task-${sectionId}-${task.id}`,
+        section: sectionLabel,
+        title: sectionLabel,
+        text: task.text || 'Untitled Task',
+        completed: Boolean(task.completed),
+        dueDate: parseDateSafe(task.dueDate),
+        priority: resolvePriority(task, task.text)
+      }));
+    })
+  ]
+    .filter((task) => !task.completed)
+    .map((task) => {
+      const today = new Date();
+      const dayDelta = task.dueDate ? differenceInCalendarDays(task.dueDate, today) : null;
+      const score =
+        (dayDelta !== null && dayDelta < 0 ? 100 : 0) +
+        (dayDelta !== null && dayDelta >= 0 && dayDelta <= 2 ? 60 : 0) +
+        (task.priority === 'high' ? 45 : task.priority === 'medium' ? 20 : 8);
+      return { ...task, dayDelta, score };
+    })
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (a.dayDelta === null && b.dayDelta === null) return 0;
+      if (a.dayDelta === null) return 1;
+      if (b.dayDelta === null) return -1;
+      return a.dayDelta - b.dayDelta;
+    })
+    .slice(0, 8);
+
+  const upcomingEvents = [
+    ...calendarEvents.map((event) => ({
+      id: `calendar-${event.id}`,
+      type: event.type || 'calendar',
+      title: event.title,
+      source: 'Calendar',
+      date: parseDateSafe(event.date)
+    })),
+    ...courses
+      .filter((course) => parseDateSafe(course.deadline))
+      .map((course) => ({
+        id: `course-deadline-${course.id}`,
+        type: 'course',
+        title: `${course.title} Deadline`,
+        source: 'SAP Courses',
+        date: parseDateSafe(course.deadline)
+      })),
+    ...hackathons
+      .filter((hackathon) => parseDateSafe(hackathon.date))
+      .map((hackathon) => ({
+        id: `hackathon-${hackathon.id}`,
+        type: 'hackathon',
+        title: hackathon.title,
+        source: 'Hackathons',
+        date: parseDateSafe(hackathon.date)
+      })),
+    ...Object.entries(customProjects).flatMap(([sectionId, projects]) => {
+      const sectionLabel = customSections.find((section) => section.id === sectionId)?.label || 'Custom';
+      return (projects || [])
+        .filter((project) => parseDateSafe(project.date))
+        .map((project) => ({
+          id: `custom-project-${project.id}`,
+          type: 'custom',
+          title: project.title,
+          source: sectionLabel,
+          date: parseDateSafe(project.date)
+        }));
+    })
+  ]
+    .filter((event) => event.date)
+    .filter((event) => differenceInCalendarDays(event.date, new Date()) >= 0)
+    .sort((a, b) => a.date - b.date)
+    .slice(0, 8);
+
+  const sectionSummaries = [
+    {
+      id: 'courses',
+      label: 'SAP Courses',
+      icon: BookOpen,
+      items: courses.map((course) => ({ id: `course-${course.id}`, title: course.title }))
+    },
+    {
+      id: 'internships',
+      label: 'Internships',
+      icon: Briefcase,
+      items: internships.map((internship) => ({ id: `internship-${internship.id}`, title: internship.title }))
+    },
+    {
+      id: 'hackathons',
+      label: 'Hackathons',
+      icon: Trophy,
+      items: hackathons.map((hackathon) => ({ id: `hackathon-${hackathon.id}`, title: hackathon.title }))
+    },
+    ...customSections.map((section) => ({
+      id: section.id,
+      label: section.label,
+      icon: Folder,
+      items: (customProjects[section.id] || []).map((project) => ({ id: `project-${project.id}`, title: project.title }))
+    }))
+  ];
+
   const renderDashboard = () => (
     <div className="animate-fade-in stagger-1">
-      <div className="dashboard-grid">
-        <div className="glass stat-card">
-          <div className="stat-icon emerald"><BookOpen /></div>
-          <div className="stat-info">
-            <h4>Active Courses</h4>
-            <div className="value">2</div>
-          </div>
-        </div>
-        <div className="glass stat-card">
-          <div className="stat-icon purple"><Briefcase /></div>
-          <div className="stat-info">
-            <h4>IBM Internships</h4>
-            <div className="value">3</div>
-          </div>
-        </div>
-        <div className="glass stat-card">
-          <div className="stat-icon cyan"><Trophy /></div>
-          <div className="stat-info">
-            <h4>Hackathon Finals</h4>
-            <div className="value">2</div>
-          </div>
-        </div>
+      <div className="section-grid" style={{ marginBottom: '2rem' }}>
+        {sectionSummaries.map((summary, idx) => {
+          const Icon = summary.icon;
+          return (
+            <div key={summary.id} className={`glass data-card animate-fade-in stagger-${(idx % 4) + 1}`}>
+              <div className="card-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
+                  <div className="stat-icon" style={{ width: '42px', height: '42px' }}>
+                    <Icon size={20} />
+                  </div>
+                  <div>
+                    <h3 className="card-title">{summary.label}</h3>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{summary.items.length} item(s)</div>
+                  </div>
+                </div>
+                <button className="btn btn-outline" style={{ padding: '0.35rem 0.85rem', fontSize: '0.8rem' }} onClick={() => setActiveTab(summary.id)}>
+                  Open
+                </button>
+              </div>
+              <div className="card-body">
+                {summary.items.length > 0 ? (
+                  <ul className="task-list" style={{ marginTop: 0, maxHeight: '160px', overflowY: 'auto', paddingRight: '0.25rem' }}>
+                    {summary.items.map((item) => (
+                      <li key={item.id} className="task-item" style={{ marginBottom: '0.45rem' }}>
+                        <ChevronRight size={14} className="task-icon" />
+                        <span>{item.title}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>No items in this section yet.</div>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
         <div className="glass data-card p-6 animate-fade-in stagger-2">
-          <h3 className="card-title text-gradient" style={{ marginBottom: '1rem' }}>Immediate Action Required</h3>
-          <ul className="task-list">
-            <li className="task-item">
-              <AlertCircle size={18} className="task-icon" style={{ color: 'var(--status-deadline)' }} />
-              <span><strong>IBM AI Strategist:</strong> Submit Weekly Attendance Form by Friday</span>
-            </li>
-            <li className="task-item">
-              <Clock size={18} className="task-icon" style={{ color: 'var(--status-pending)' }} />
-              <span><strong>SAP ABAP:</strong> Module 4 Assessment (Due in 5 days)</span>
-            </li>
-            <li className="task-item">
-              <CheckCircle2 size={18} className="task-icon" style={{ color: 'var(--status-active)' }} />
-              <span><strong>SIH 2025:</strong> Finalize Nodal Center travel details</span>
-            </li>
-          </ul>
+          <h3 className="card-title text-gradient" style={{ marginBottom: '1rem' }}>Immediate Actions Required</h3>
+          {immediateTasks.length > 0 ? (
+            <ul className="task-list" style={{ marginTop: 0, maxHeight: '280px', overflowY: 'auto', paddingRight: '0.25rem' }}>
+              {immediateTasks.map((task) => {
+                const isOverdue = task.dayDelta !== null && task.dayDelta < 0;
+                const isDueSoon = task.dayDelta !== null && task.dayDelta >= 0 && task.dayDelta <= 2;
+                return (
+                  <li key={task.id} className="task-item" style={{ alignItems: 'center' }}>
+                    {isOverdue ? (
+                      <AlertCircle size={18} className="task-icon" style={{ color: 'var(--status-deadline)' }} />
+                    ) : isDueSoon ? (
+                      <Clock size={18} className="task-icon" style={{ color: 'var(--status-pending)' }} />
+                    ) : (
+                      <CheckCircle2 size={18} className="task-icon" style={{ color: 'var(--status-active)' }} />
+                    )}
+                    <span>
+                      <strong>{task.section} - {task.title}:</strong> {task.text}
+                      {task.dayDelta !== null && (
+                        <span style={{ marginLeft: '0.45rem', color: isOverdue ? '#ef4444' : '#f59e0b', fontSize: '0.8rem' }}>
+                          ({isOverdue ? `${Math.abs(task.dayDelta)} day(s) overdue` : `due in ${task.dayDelta} day(s)`})
+                        </span>
+                      )}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p style={{ color: 'var(--text-muted)' }}>No urgent tasks. You are all caught up.</p>
+          )}
         </div>
+
         <div className="glass data-card p-6 animate-fade-in stagger-3">
           <h3 className="card-title text-gradient" style={{ marginBottom: '1rem' }}>Upcoming Events</h3>
-          <ul className="task-list">
-            <li className="task-item">
-              <Video size={18} className="task-icon" />
-              <span><strong>IBM AI/ML:</strong> Masterclass - Thursday, 6 PM PST</span>
-            </li>
-            <li className="task-item">
-              <Calendar size={18} className="task-icon" />
-              <span><strong>Odoo Hackathon:</strong> Starts on April 30th</span>
-            </li>
-          </ul>
-          <button className="btn btn-primary" style={{ marginTop: 'auto', alignSelf: 'flex-start' }} onClick={() => setActiveTab('hackathons')}>
-            View All Events
+          {upcomingEvents.length > 0 ? (
+            <ul className="task-list" style={{ marginTop: 0, maxHeight: '280px', overflowY: 'auto', paddingRight: '0.25rem' }}>
+              {upcomingEvents.map((event) => (
+                <li key={event.id} className="task-item" style={{ alignItems: 'center' }}>
+                  <Calendar size={18} className="task-icon" />
+                  <span>
+                    <strong>{event.title}</strong>
+                    <span style={{ marginLeft: '0.45rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                      [{event.source}] {format(event.date, 'dd MMM yyyy')}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p style={{ color: 'var(--text-muted)' }}>No upcoming dated events found yet.</p>
+          )}
+
+          <button className="btn btn-primary" style={{ marginTop: 'auto', alignSelf: 'flex-start' }} onClick={() => setActiveTab('calendar')}>
+            Open Calendar
           </button>
         </div>
       </div>
