@@ -259,6 +259,7 @@ export default function Dashboard() {
 
   // Modal State
   const [modalConfig, setModalConfig] = useState(null); // null means closed
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // Calendar State
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -1435,6 +1436,13 @@ export default function Dashboard() {
           </div>
           <div className="user-info">
             <span className="name" style={{fontSize: '0.85rem'}}>{currentUser?.email}</span>
+          <button
+            onClick={() => setIsProfileModalOpen(true)}
+            className="role"
+            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'var(--text-muted)', marginTop: '4px', textAlign: 'left' }}
+          >
+            View Profile
+          </button>
             <button 
                 onClick={handleLogout}
                 className="role hover:text-red-400 transition-colors flex items-center gap-1"
@@ -1479,6 +1487,14 @@ export default function Dashboard() {
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <button
+              className="btn btn-outline"
+              onClick={() => setIsProfileModalOpen(true)}
+              style={{ gap: '0.4rem' }}
+            >
+              <User size={16} /> Profile
+            </button>
+
             <select
               value={theme}
               onChange={(e) => setTheme(e.target.value)}
@@ -1522,6 +1538,31 @@ export default function Dashboard() {
           </div>
         )}
       </main>
+
+      {isProfileModalOpen && (
+        <div className="profile-modal-overlay" onClick={() => setIsProfileModalOpen(false)}>
+          <div className="profile-modal-card glass" onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h2 className="card-title text-gradient" style={{ fontSize: '1.4rem' }}>Profile</h2>
+              <button onClick={() => setIsProfileModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <X size={22} />
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gap: '0.8rem', marginBottom: '1.5rem' }}>
+              <div><strong>Email:</strong> {currentUser?.email || 'N/A'}</div>
+              <div><strong>UID:</strong> {currentUser?.uid || 'N/A'}</div>
+              <div><strong>Provider:</strong> {currentUser?.providerData?.[0]?.providerId || 'password'}</div>
+              <div><strong>Name:</strong> {currentUser?.displayName || 'Not set'}</div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.8rem' }}>
+              <button type="button" className="btn btn-outline" onClick={() => setIsProfileModalOpen(false)}>Close</button>
+              <button type="button" className="btn btn-primary" onClick={handleLogout}><LogOut size={14} /> Sign Out</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Global Form Modal Overlay */}
       {modalConfig && (

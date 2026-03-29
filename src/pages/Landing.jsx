@@ -44,7 +44,7 @@ export default function Landing() {
     }}>
       
       {/* --- Header --- */}
-      <header style={{ 
+      <header className="landing-header" style={{ 
         position: 'fixed', 
         top: 0, 
         left: 0, 
@@ -58,7 +58,7 @@ export default function Landing() {
         background: 'rgba(9, 9, 11, 0.6)',
         zIndex: 100
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }} onClick={() => navigate('/')}>
+        <div className="landing-brand" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }} onClick={() => navigate('/')}>
           <div style={{ 
             background: 'var(--accent-gradient)', 
             padding: '8px', 
@@ -77,7 +77,7 @@ export default function Landing() {
           }}>Daily Loop</h1>
         </div>
         
-        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+        <div className="landing-header-actions" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
           <button 
             onClick={() => navigate('/login')}
             style={{
@@ -124,7 +124,7 @@ export default function Landing() {
       </header>
 
       {/* --- Hero Section --- */}
-      <section style={{ 
+      <section className="landing-hero" style={{ 
         padding: '10rem 2rem 6rem', 
         display: 'flex', 
         flexDirection: 'column', 
@@ -148,7 +148,7 @@ export default function Landing() {
           zIndex: 0
         }} />
         
-        <div style={{ zIndex: 1, maxWidth: '800px' }}>
+        <div className="landing-hero-content" style={{ zIndex: 1, maxWidth: '800px' }}>
           <div style={{ 
             display: 'inline-flex', 
             alignItems: 'center', 
@@ -171,7 +171,7 @@ export default function Landing() {
             v1.0 Now Live for Public Beta
           </div>
 
-          <h1 style={{ 
+          <h1 className="landing-hero-title" style={{ 
             fontSize: '4rem', 
             lineHeight: 1.1, 
             marginBottom: '1.5rem', 
@@ -185,7 +185,7 @@ export default function Landing() {
             }}>Digital Growth</span>
           </h1>
           
-          <p style={{ 
+          <p className="landing-hero-subtitle" style={{ 
             fontSize: '1.25rem', 
             color: 'var(--text-muted)', 
             marginBottom: '3rem', 
@@ -195,7 +195,7 @@ export default function Landing() {
             Designed for high-performance students and developers.
           </p>
 
-          <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center' }}>
+          <div className="landing-hero-actions" style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center' }}>
             <button 
               onClick={() => navigate('/register')}
               style={{
@@ -242,7 +242,7 @@ export default function Landing() {
         </div>
 
         {/* Dashboard Preview (Mockup) */}
-        <div style={{ 
+        <div className="landing-preview" style={{ 
           marginTop: '6rem', 
           width: '90%', 
           maxWidth: '1200px', 
@@ -266,15 +266,15 @@ export default function Landing() {
           </div>
           
           {/* Decorative code/ui lines */}
-          <div style={{ position: 'absolute', top: '20px', left: '250px', right: '20px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}></div>
-          <div style={{ position: 'absolute', top: '20px', left: '20px', width: '200px', bottom: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}></div>
-          <div style={{ position: 'absolute', top: '80px', left: '250px', width: '30%', height: '200px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '16px', border: '1px solid rgba(16, 185, 129, 0.2)' }}></div>
-          <div style={{ position: 'absolute', top: '80px', right: '20px', width: '40%', height: '300px', background: 'rgba(14, 165, 233, 0.1)', borderRadius: '16px', border: '1px solid rgba(14, 165, 233, 0.2)' }}></div>
+          <div className="landing-preview-decor" style={{ position: 'absolute', top: '20px', left: '250px', right: '20px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}></div>
+          <div className="landing-preview-decor" style={{ position: 'absolute', top: '20px', left: '20px', width: '200px', bottom: '20px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}></div>
+          <div className="landing-preview-decor" style={{ position: 'absolute', top: '80px', left: '250px', width: '30%', height: '200px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '16px', border: '1px solid rgba(16, 185, 129, 0.2)' }}></div>
+          <div className="landing-preview-decor" style={{ position: 'absolute', top: '80px', right: '20px', width: '40%', height: '300px', background: 'rgba(14, 165, 233, 0.1)', borderRadius: '16px', border: '1px solid rgba(14, 165, 233, 0.2)' }}></div>
         </div>
       </section>
 
       {/* --- Features Section --- */}
-      <section id="features" style={{ padding: '6rem 4rem', background: 'var(--bg-dark)' }}>
+      <section id="features" className="landing-features" style={{ padding: '6rem 4rem', background: 'var(--bg-dark)' }}>
         <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
           <h2 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '1rem' }}>Built for Achievers</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem' }}>Everything you need to stay on top of your goals.</p>
@@ -321,7 +321,7 @@ export default function Landing() {
       </section>
 
       {/* --- CTA Section --- */}
-      <section style={{ 
+      <section className="landing-cta" style={{ 
         padding: '6rem 2rem', 
         textAlign: 'center', 
         background: 'linear-gradient(180deg, var(--bg-dark) 0%, rgba(30, 27, 75, 0.3) 100%)',
@@ -358,7 +358,7 @@ export default function Landing() {
       </section>
 
       {/* --- Footer --- */}
-      <footer style={{ 
+      <footer className="landing-footer" style={{ 
         padding: '3rem 4rem', 
         borderTop: '1px solid var(--panel-border)', 
         background: '#050507',
