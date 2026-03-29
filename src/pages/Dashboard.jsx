@@ -1171,7 +1171,7 @@ export default function Dashboard() {
 
                 <h4 style={{ fontSize: '0.9rem', color: 'var(--text-main)', marginBottom: '0.5rem' }}>Important Links:</h4>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-                  {hackathon.links.map((link, i) => {
+                  {(Array.isArray(hackathon.links) ? hackathon.links : []).map((link, i) => {
                     const linkObj = typeof link === 'object' ? link : { label: link, url: '' };
                     return (
                       <div key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8rem', padding: '0.25rem 0.75rem', background: 'rgba(14, 165, 233, 0.1)', color: '#38bdf8', borderRadius: '999px', border: '1px solid rgba(14, 165, 233, 0.2)' }}>
@@ -1184,8 +1184,9 @@ export default function Dashboard() {
                           onClick={() => {
                             const newUrl = window.prompt(`Enter URL for "${linkObj.label}":`, linkObj.url || '');
                             if (newUrl !== null) {
-                              const newLinks = hackathon.links.map((l, li) => li === i ? { label: linkObj.label, url: newUrl } : (typeof l === 'object' ? l : { label: l, url: '' }));
-                              handleHackathonUpdate(hackathon.id, { links: newLinks });
+                              const existing = Array.isArray(hackathon.links) ? hackathon.links : [];
+                              const newLinks = existing.map((l, li) => li === i ? { label: linkObj.label, url: newUrl } : (typeof l === 'object' ? l : { label: l, url: '' }));
+                              handleHackathonUpdate(hackathon.id, { links: newLinks, hackathonLink: newLinks[0]?.url || hackathon.hackathonLink || '' });
                             }
                           }}
                           style={{ background: 'transparent', border: 'none', color: linkObj.url ? '#10b981' : '#38bdf8', cursor: 'pointer', padding: 0, display: 'flex' }}
@@ -1193,9 +1194,35 @@ export default function Dashboard() {
                         >
                           <ExternalLink size={11} />
                         </button>
+                        <button
+                          onClick={() => {
+                            const existing = Array.isArray(hackathon.links) ? hackathon.links : [];
+                            const newLinks = existing.filter((_, li) => li !== i);
+                            handleHackathonUpdate(hackathon.id, { links: newLinks, hackathonLink: newLinks[0]?.url || '' });
+                          }}
+                          style={{ background: 'transparent', border: 'none', color: 'var(--status-deadline)', cursor: 'pointer', padding: 0, display: 'flex' }}
+                          title="Remove Link"
+                        >
+                          <Trash2 size={11} />
+                        </button>
                       </div>
                     );
                   })}
+                  <button
+                    onClick={() => {
+                      const linkLabel = window.prompt('Enter link label (e.g., Rulebook, Submission):', 'Hackathon Link');
+                      if (!linkLabel) return;
+                      const linkUrl = window.prompt('Enter link URL:', '');
+                      if (linkUrl === null) return;
+                      const existing = Array.isArray(hackathon.links) ? hackathon.links : [];
+                      const newLinks = [...existing, { label: linkLabel, url: linkUrl }];
+                      handleHackathonUpdate(hackathon.id, { links: newLinks, hackathonLink: newLinks[0]?.url || hackathon.hackathonLink || '' });
+                    }}
+                    className="btn btn-outline"
+                    style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem' }}
+                  >
+                    + Add Link
+                  </button>
                 </div>
 
                 <h4 style={{ fontSize: '0.9rem', color: 'var(--text-main)', marginBottom: '0.5rem' }}>Sub-Tasks:</h4>
